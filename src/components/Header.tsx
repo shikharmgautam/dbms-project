@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { GraduationCap, LogOut } from 'lucide-react';
 
-export function Header() {
+export function Header() {  
   const { profile, signOut, updateUserRole } = useAuth();
 
   const handleSignOut = async () => {
