@@ -6,7 +6,7 @@ export function Header() {
   const { profile, signOut, updateUserRole } = useAuth();
 
   const handleSignOut = async () => {
-    try {
+    try {              
       await signOut();
     } catch (error) {
       console.error('Error signing out:', error);
