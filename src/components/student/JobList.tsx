@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { getJobPostings, getResumes, createApplication, getApplications } from '../../lib/api';
 import { Briefcase, MapPin, DollarSign, Calendar, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 interface JobListProps {
@@ -20,20 +20,7 @@ export function JobList({ studentProfile }: JobListProps) {
 
   const loadJobs = async () => {
     try {
-      const { data, error } = await supabase
-        .from('job_postings')
-        .select(`
-          *,
-          companies (
-            id,
-            name,
-            industry
-          )
-        `)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await getJobPostings();
       setJobs(data || []);
     } catch (error) {
       console.error('Error loading jobs:', error);
@@ -46,15 +33,9 @@ export function JobList({ studentProfile }: JobListProps) {
     if (!studentProfile) return;
 
     try {
-      const { data, error } = await supabase
-        .from('applications')
-        .select('job_id, status, eligibility_status')
-        .eq('student_id', studentProfile.id);
-
-      if (error) throw error;
-
+      const data = await getApplications({ studentId: studentProfile.id });
       const applicationsMap: Record<string, any> = {};
-      data?.forEach((app) => {
+      (data || []).forEach((app: any) => {
         applicationsMap[app.job_id] = app;
       });
       setApplications(applicationsMap);
@@ -99,26 +80,9 @@ export function JobList({ studentProfile }: JobListProps) {
     const eligibility = checkEligibility(job);
 
     try {
-      const { data: primaryResume } = await supabase
-        .from('resumes')
-        .select('id')
-        .eq('student_id', studentProfile.id)
-        .eq('is_primary', true)
-        .maybeSingle();
-
-      const { error } = await supabase
-        .from('applications')
-        .insert({
-          job_id: jobId,
-          student_id: studentProfile.id,
-          resume_id: primaryResume?.id || null,
-          eligibility_status: eligibility.eligible === true ? 'eligible' :
-                             eligibility.eligible === 'conditional' ? 'conditional' : 'not_eligible',
-          eligibility_notes: eligibility.reason,
-        });
-
-      if (error) throw error;
-
+      const resumes = await getResumes(studentProfile.id);
+      const primaryResume = Array.isArray(resumes) && resumes.length ? resumes[0] : null;
+      await createApplication({ job_id: jobId, student_id: studentProfile.id, resume_id: primaryResume?.id || null, eligibility_status: eligibility.eligible === true ? 'eligible' : eligibility.eligible === 'conditional' ? 'conditional' : 'not_eligible', eligibility_notes: eligibility.reason });
       await loadApplications();
       alert('Application submitted successfully!');
     } catch (error: any) {

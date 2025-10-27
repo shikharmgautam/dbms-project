@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"backend/db"
-	"context"
 	"net/http"
 	"time"
 
@@ -17,15 +16,9 @@ func GetStudentProfiles(c *gin.Context) {
 	if user != "" {
 		filter["user_id"] = user
 	}
-	col := db.DB.Collection("student_profiles")
-	cur, err := col.Find(context.Background(), filter)
+	out, err := db.GetStudentProfiles(filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list"})
-		return
-	}
-	var out []db.StudentProfile
-	if err := cur.All(context.Background(), &out); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "decode"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": out})
@@ -43,8 +36,7 @@ func CreateStudentProfile(c *gin.Context) {
 	now := time.Now().Format(time.RFC3339)
 	sp.CreatedAt = now
 	sp.UpdatedAt = now
-	_, err := db.DB.Collection("student_profiles").InsertOne(context.Background(), sp)
-	if err != nil {
+	if err := db.CreateStudentProfile(sp); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "insert failed"})
 		return
 	}
@@ -60,15 +52,12 @@ func UpdateStudentProfile(c *gin.Context) {
 	}
 	patch["updated_at"] = time.Now().Format(time.RFC3339)
 
-	col := db.DB.Collection("student_profiles")
 	if id == "" {
-		// try to find by user_id in patch
 		if u, ok := patch["user_id"].(string); ok && u != "" {
-			// find record for user with non-empty id
-			res := col.FindOne(context.Background(), bson.M{"user_id": u, "_id": bson.M{"$ne": ""}})
-			var existing db.StudentProfile
-			if err := res.Decode(&existing); err == nil {
-				id = existing.ID
+			// try to find existing student profile for user
+			rows, err := db.GetStudentProfiles(map[string]interface{}{"user_id": u})
+			if err == nil && len(rows) > 0 {
+				id = rows[0].ID
 			}
 		}
 	}
@@ -76,8 +65,7 @@ func UpdateStudentProfile(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "missing id"})
 		return
 	}
-	_, err := col.UpdateOne(context.Background(), bson.M{"_id": id}, bson.M{"$set": patch})
-	if err != nil {
+	if err := db.UpdateStudentProfile(id, patch); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "update failed"})
 		return
 	}

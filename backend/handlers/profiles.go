@@ -2,19 +2,17 @@ package handlers
 
 import (
 	"backend/db"
-	"context"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func GetProfiles(c *gin.Context) {
 	// support ?id=eq.<id> or ?user_id=<id>
 	q := c.Query("id")
-	filter := bson.M{}
+	filter := map[string]interface{}{}
 	if q != "" {
 		// expect eq.<id>
 		if len(q) > 3 && q[:3] == "eq." {
@@ -26,15 +24,9 @@ func GetProfiles(c *gin.Context) {
 		filter["_id"] = u
 	}
 
-	col := db.DB.Collection("profiles")
-	cur, err := col.Find(context.Background(), filter)
+	out, err := db.ListProfiles(filter)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list"})
-		return
-	}
-	var out []db.Profile
-	if err := cur.All(context.Background(), &out); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to decode"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": out})
@@ -52,8 +44,7 @@ func CreateProfile(c *gin.Context) {
 	now := time.Now().Format(time.RFC3339)
 	p.CreatedAt = now
 	p.UpdatedAt = now
-	_, err := db.DB.Collection("profiles").InsertOne(context.Background(), p)
-	if err != nil {
+	if err := db.CreateProfile(p); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "insert failed"})
 		return
 	}
@@ -72,8 +63,7 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 	patch["updated_at"] = time.Now().Format(time.RFC3339)
-	_, err := db.DB.Collection("profiles").UpdateOne(context.Background(), bson.M{"_id": id}, bson.M{"$set": patch})
-	if err != nil {
+	if err := db.UpdateProfile(id, patch); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "update failed"})
 		return
 	}

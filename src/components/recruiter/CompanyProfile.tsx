@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { supabase } from '../../lib/supabase';
+import { createCompany, updateCompany } from '../../lib/api';
 import { Save } from 'lucide-react';
 
 interface CompanyProfileProps {
@@ -44,16 +44,9 @@ export function CompanyProfile({ company, onUpdate }: CompanyProfileProps) {
       };
 
       if (company) {
-        const { error } = await supabase
-          .from('companies')
-          .update(companyData)
-          .eq('id', company.id);
-        if (error) throw error;
+        await updateCompany(company.id, companyData);
       } else {
-        const { error } = await supabase
-          .from('companies')
-          .insert(companyData);
-        if (error) throw error;
+        await createCompany(companyData);
       }
 
       setSuccess('Company profile saved successfully!');

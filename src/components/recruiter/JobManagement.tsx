@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { getJobPostings, updateJobPosting, deleteJobPosting } from '../../lib/api';
 import { Briefcase, Edit2, Trash2, Eye, EyeOff } from 'lucide-react';
 
 interface JobManagementProps {
@@ -20,16 +20,7 @@ export function JobManagement({ companyId }: JobManagementProps) {
     if (!companyId) return;
 
     try {
-      const { data, error } = await supabase
-        .from('job_postings')
-        .select(`
-          *,
-          applications (count)
-        `)
-        .eq('company_id', companyId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await getJobPostings(companyId);
       setJobs(data || []);
     } catch (error) {
       console.error('Error loading jobs:', error);
@@ -42,12 +33,7 @@ export function JobManagement({ companyId }: JobManagementProps) {
     const newStatus = currentStatus === 'active' ? 'closed' : 'active';
 
     try {
-      const { error } = await supabase
-        .from('job_postings')
-        .update({ status: newStatus })
-        .eq('id', jobId);
-
-      if (error) throw error;
+      await updateJobPosting(jobId, { status: newStatus });
       await loadJobs();
     } catch (error) {
       console.error('Error updating job status:', error);
@@ -58,12 +44,7 @@ export function JobManagement({ companyId }: JobManagementProps) {
     if (!confirm('Are you sure you want to delete this job posting?')) return;
 
     try {
-      const { error } = await supabase
-        .from('job_postings')
-        .delete()
-        .eq('id', jobId);
-
-      if (error) throw error;
+      await deleteJobPosting(jobId);
       await loadJobs();
     } catch (error) {
       console.error('Error deleting job:', error);
@@ -120,7 +101,7 @@ export function JobManagement({ companyId }: JobManagementProps) {
                     {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
                   </span>
                   <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                    {job.applications?.[0]?.count || 0} Applications
+                    {job.applications_count || 0} Applications
                   </span>
                 </div>
               </div>

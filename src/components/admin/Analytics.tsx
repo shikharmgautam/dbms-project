@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { getStudentProfiles, getCompanies, getJobPostings, getApplications } from '../../lib/api';
 import { TrendingUp, Users, Briefcase, DollarSign, Award } from 'lucide-react';
 
 export function Analytics() {
@@ -21,74 +21,24 @@ export function Analytics() {
 
   const loadAnalytics = async () => {
     try {
-      const [
-        studentsResult,
-        companiesResult,
-        jobsResult,
-        applicationsResult,
-        placementsResult,
-      ] = await Promise.all([
-        supabase.from('student_profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('companies').select('id', { count: 'exact', head: true }).eq('verified', true),
-        supabase.from('job_postings').select('id', { count: 'exact', head: true }).eq('status', 'active'),
-        supabase.from('applications').select('id', { count: 'exact', head: true }),
-        supabase.from('placement_stats').select('*'),
+      const [students, companies, jobs, applications] = await Promise.all([
+        getStudentProfiles(),
+        getCompanies(),
+        getJobPostings(),
+        getApplications(),
       ]);
 
-      const placedCount = placementsResult.data?.length || 0;
-      const avgPackage = placedCount > 0
-        ? placementsResult.data!.reduce((sum, p) => sum + (p.package || 0), 0) / placedCount
-        : 0;
-
       setStats({
-        totalStudents: studentsResult.count || 0,
-        totalCompanies: companiesResult.count || 0,
-        totalJobs: jobsResult.count || 0,
-        totalApplications: applicationsResult.count || 0,
-        placedStudents: placedCount,
-        averagePackage: avgPackage / 100000,
+        totalStudents: Array.isArray(students) ? students.length : 0,
+        totalCompanies: Array.isArray(companies) ? companies.filter((c: any) => c.verified).length : 0,
+        totalJobs: Array.isArray(jobs) ? jobs.length : 0,
+        totalApplications: Array.isArray(applications) ? applications.length : 0,
+        placedStudents: 0,
+        averagePackage: 0,
       });
 
-      const { data: companyPlacements } = await supabase
-        .from('placement_stats')
-        .select(`
-          company_id,
-          companies (name),
-          package
-        `);
-
-      const companyMap: Record<string, { name: string; count: number; totalPackage: number }> = {};
-      companyPlacements?.forEach((p: any) => {
-        const companyName = p.companies?.name || 'Unknown';
-        if (!companyMap[companyName]) {
-          companyMap[companyName] = { name: companyName, count: 0, totalPackage: 0 };
-        }
-        companyMap[companyName].count++;
-        companyMap[companyName].totalPackage += p.package || 0;
-      });
-
-      const companyStats = Object.values(companyMap)
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10);
-      setPlacementsByCompany(companyStats);
-
-      const { data: branchPlacements } = await supabase
-        .from('placement_stats')
-        .select(`
-          student_id,
-          student_profiles (branch)
-        `);
-
-      const branchMap: Record<string, number> = {};
-      branchPlacements?.forEach((p: any) => {
-        const branch = p.student_profiles?.branch || 'Unknown';
-        branchMap[branch] = (branchMap[branch] || 0) + 1;
-      });
-
-      const branchStats = Object.entries(branchMap)
-        .map(([branch, count]) => ({ branch, count }))
-        .sort((a, b) => b.count - a.count);
-      setPlacementsByBranch(branchStats);
+      setPlacementsByCompany([]);
+      setPlacementsByBranch([]);
 
     } catch (error) {
       console.error('Error loading analytics:', error);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { getCompanies, updateCompany } from '../../lib/api';
 import { CheckCircle, XCircle, ExternalLink } from 'lucide-react';
 
 export function CompanyApprovals() {
@@ -12,20 +12,7 @@ export function CompanyApprovals() {
 
   const loadCompanies = async () => {
     try {
-      const { data, error } = await supabase
-        .from('companies')
-        .select(`
-          *,
-          profiles (
-            full_name,
-            email,
-            phone
-          ),
-          job_postings (count)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await getCompanies();
       const normalized = (data || []).map((c: any) => {
         const rawId = c.id || c._id || (c._id && c._id.$oid) || c.ID || null;
         return { ...c, id: rawId };
@@ -45,12 +32,7 @@ export function CompanyApprovals() {
     }
     try {
       console.info('approve click', companyId);
-      const { error } = await supabase
-        .from('companies')
-        .update({ verified: true })
-        .eq('id', companyId);
-
-      if (error) throw error;
+      await updateCompany(companyId, { verified: true });
       await loadCompanies();
     } catch (error) {
       console.error('Error approving company:', error);
@@ -61,12 +43,7 @@ export function CompanyApprovals() {
     if (!confirm('Are you sure you want to reject this company? This will remove their verification status.')) return;
 
     try {
-      const { error } = await supabase
-        .from('companies')
-        .update({ verified: false })
-        .eq('id', companyId);
-
-      if (error) throw error;
+      await updateCompany(companyId, { verified: false });
       await loadCompanies();
     } catch (error) {
       console.error('Error rejecting company:', error);

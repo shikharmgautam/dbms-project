@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { getApplications } from '../../lib/api';
 import { FileText, Calendar, MapPin, Clock } from 'lucide-react';
 
 interface ApplicationListProps {
@@ -20,34 +20,7 @@ export function ApplicationList({ studentProfileId }: ApplicationListProps) {
     if (!studentProfileId) return;
 
     try {
-      const { data, error } = await supabase
-        .from('applications')
-        .select(`
-          *,
-          job_postings (
-            id,
-            title,
-            role,
-            job_location,
-            salary_min,
-            salary_max,
-            companies (
-              name,
-              industry
-            )
-          ),
-          interviews (
-            id,
-            scheduled_at,
-            location,
-            mode,
-            status
-          )
-        `)
-        .eq('student_id', studentProfileId)
-        .order('applied_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await getApplications({ studentId: studentProfileId });
       setApplications(data || []);
     } catch (error) {
       console.error('Error loading applications:', error);

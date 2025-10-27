@@ -32,9 +32,7 @@ func GoogleAuth(c *gin.Context) {
 	}
 
 	// ensure profile exists
-	collection := db.DB.Collection("profiles")
-	var existing db.Profile
-	err = collection.FindOne(context.Background(), map[string]interface{}{"_id": tok.UID}).Decode(&existing)
+	_, err = db.GetProfile(tok.UID)
 	if err != nil {
 		// create profile
 		newProfile := db.Profile{
@@ -55,8 +53,7 @@ func GoogleAuth(c *gin.Context) {
 			CreatedAt: time.Now().Format(time.RFC3339),
 			UpdatedAt: time.Now().Format(time.RFC3339),
 		}
-		_, err := collection.InsertOne(context.Background(), newProfile)
-		if err != nil {
+		if err := db.CreateProfile(newProfile); err != nil {
 			log.Println("failed to create profile:", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create profile"})
 			return

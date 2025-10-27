@@ -87,10 +87,8 @@ func AuthMiddleware() gin.HandlerFunc {
 			userID = tok.UID
 		}
 
-		// load profile
-		collection := db.DB.Collection("profiles")
-		var profile db.Profile
-		err := collection.FindOne(context.Background(), map[string]interface{}{"_id": userID}).Decode(&profile)
+		// load profile (supports in-memory fallback)
+		profile, err := db.GetProfile(userID)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Profile not found"})
 			c.Abort()

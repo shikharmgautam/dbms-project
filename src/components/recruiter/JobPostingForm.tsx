@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { createJobPosting } from '../../lib/api';
 import { Save, Plus, Trash2 } from 'lucide-react';
 
 interface JobPostingFormProps {
@@ -45,24 +45,20 @@ export function JobPostingForm({ companyId, onSuccess }: JobPostingFormProps) {
       if (graduationYear) eligibilityCriteria.graduationYear = parseInt(graduationYear);
       if (allowedBranches.length > 0) eligibilityCriteria.allowedBranches = allowedBranches.filter(b => b.trim());
 
-      const { error } = await supabase
-        .from('job_postings')
-        .insert({
-          company_id: companyId,
-          title,
-          role,
-          description,
-          openings: parseInt(openings),
-          salary_min: salaryMin ? parseFloat(salaryMin) * 100000 : null,
-          salary_max: salaryMax ? parseFloat(salaryMax) * 100000 : null,
-          job_location: location,
-          bond_terms: bondTerms || null,
-          application_deadline: deadline || null,
-          eligibility_criteria: eligibilityCriteria,
-          status,
-        });
-
-      if (error) throw error;
+      await createJobPosting({
+        company_id: companyId,
+        title,
+        role,
+        description,
+        openings: parseInt(openings),
+        salary_min: salaryMin ? parseFloat(salaryMin) * 100000 : null,
+        salary_max: salaryMax ? parseFloat(salaryMax) * 100000 : null,
+        job_location: location,
+        bond_terms: bondTerms || null,
+        application_deadline: deadline || null,
+        eligibility_criteria: eligibilityCriteria,
+        status,
+      });
 
       setTitle('');
       setRole('');

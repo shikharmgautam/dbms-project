@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { supabase } from '../../lib/supabase';
+import { getCompanies } from '../../lib/api';
 import { CompanyProfile } from './CompanyProfile';
 import { JobPostingForm } from './JobPostingForm';
 import { JobManagement } from './JobManagement';
@@ -23,14 +23,9 @@ export function RecruiterDashboard() {
     if (!profile) return;
 
     try {
-      const { data, error } = await supabase
-        .from('companies')
-        .select('*')
-        .eq('recruiter_id', profile.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      setCompany(data);
+      const data = await getCompanies(profile.id);
+      // API returns an array; pick first matching company
+      setCompany((Array.isArray(data) && data.length) ? data[0] : null);
     } catch (error) {
       console.error('Error loading company:', error);
     } finally {

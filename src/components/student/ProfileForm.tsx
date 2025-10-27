@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { supabase } from '../../lib/supabase';
+import { createStudentProfile, updateStudentProfile } from '../../lib/api';
 import { Save, Plus, Trash2 } from 'lucide-react';
 
 interface ProfileFormProps {
@@ -64,16 +64,9 @@ export function ProfileForm({ studentProfile, onUpdate }: ProfileFormProps) {
       const existingId = studentProfile?.id || studentProfile?._id || studentProfile?.ID || null;
 
       if (existingId) {
-        const { error } = await supabase
-          .from('student_profiles')
-          .update(profileData)
-          .eq('id', existingId);
-        if (error) throw error;
+        await updateStudentProfile(existingId, profileData);
       } else {
-        const { error } = await supabase
-          .from('student_profiles')
-          .insert(profileData);
-        if (error) throw error;
+        await createStudentProfile(profileData);
       }
 
       setSuccess('Profile saved successfully!');

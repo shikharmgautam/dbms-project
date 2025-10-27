@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { supabase } from '../../lib/supabase';
+import api, { getStudentProfiles } from '../../lib/api';
 import { ProfileForm } from './ProfileForm';
 import { ResumeManager } from './ResumeManager';
 import { JobList } from './JobList';
@@ -27,14 +27,7 @@ export function StudentDashboard() {
 
     try {
       // fetch all profiles for this user and prefer one with a non-empty id
-      const { data, error } = await supabase
-        .from('student_profiles')
-        .select('*')
-        .eq('user_id', profile.id);
-
-      if (error) throw error;
-
-      const profiles = data || [];
+      const profiles = await getStudentProfiles(profile.id) as any[];
       // prefer a profile with a truthy id
       let userProfile = profiles.find((p: any) => p.user_id === profile.id && p.id) || profiles[0] || null;
 
@@ -43,7 +36,7 @@ export function StudentDashboard() {
         userProfile.id = userProfile.id || userProfile._id || userProfile.ID || null;
       }
 
-      console.info('getStudentProfiles response:', { data: profiles });
+  console.info('getStudentProfiles response:', { data: profiles });
       console.info('matched userProfile:', userProfile);
 
       setStudentProfile(userProfile);

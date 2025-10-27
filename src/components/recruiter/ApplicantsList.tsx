@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { getJobPostings, getApplications, updateApplicationStatus as apiUpdateApplicationStatus, createInterview } from '../../lib/api';
 import { Users, Filter, Download, Mail, Calendar } from 'lucide-react';
 
 interface ApplicantsListProps {
@@ -29,12 +29,7 @@ export function ApplicantsList({ companyId }: ApplicantsListProps) {
     if (!companyId) return;
 
     try {
-      const { data, error } = await supabase
-        .from('job_postings')
-        .select('id, title')
-        .eq('company_id', companyId);
-
-      if (error) throw error;
+      const data = await getJobPostings(companyId);
       setJobs(data || []);
     } catch (error) {
       console.error('Error loading jobs:', error);
@@ -45,34 +40,7 @@ export function ApplicantsList({ companyId }: ApplicantsListProps) {
     if (!companyId) return;
 
     try {
-      const { data, error } = await supabase
-        .from('applications')
-        .select(`
-          *,
-          job_postings!inner (
-            id,
-            title,
-            company_id
-          ),
-          student_profiles (
-            id,
-            roll_number,
-            cgpa,
-            branch,
-            graduation_year,
-            backlogs,
-            skills,
-            profiles (
-              full_name,
-              email,
-              phone
-            )
-          )
-        `)
-        .eq('job_postings.company_id', companyId)
-        .order('applied_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await getApplications({ companyId });
       setApplications(data || []);
     } catch (error) {
       console.error('Error loading applications:', error);
@@ -97,12 +65,7 @@ export function ApplicantsList({ companyId }: ApplicantsListProps) {
 
   const updateApplicationStatus = async (applicationId: string, newStatus: string) => {
     try {
-      const { error } = await supabase
-        .from('applications')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', applicationId);
-
-      if (error) throw error;
+      await apiUpdateApplicationStatus(applicationId, { status: newStatus, updated_at: new Date().toISOString() });
       await loadApplications();
     } catch (error) {
       console.error('Error updating application status:', error);
@@ -117,17 +80,7 @@ export function ApplicantsList({ companyId }: ApplicantsListProps) {
     const mode = prompt('Enter mode (online/offline):');
 
     try {
-      const { error } = await supabase
-        .from('interviews')
-        .insert({
-          application_id: applicationId,
-          scheduled_at: new Date(scheduledAt).toISOString(),
-          location: location || null,
-          mode: mode as 'online' | 'offline',
-        });
-
-      if (error) throw error;
-
+      await createInterview({ application_id: applicationId, scheduled_at: new Date(scheduledAt).toISOString(), location: location || null, mode });
       await updateApplicationStatus(applicationId, 'interview_scheduled');
       alert('Interview scheduled successfully!');
     } catch (error: any) {
