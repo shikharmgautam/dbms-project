@@ -7,6 +7,7 @@ import {
   User as FirebaseUser
 } from 'firebase/auth';
 import { auth } from '../lib/firebase';
+import { API_BASE } from '../lib/api';
 // we'll use backend API for profiles/auth exchange
 
 type Profile = {
@@ -57,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const token = customTokenOverride || localStorage.getItem('userSessionToken');
       if (!token) throw new Error('No custom session token found.');
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/profiles?id=eq.${userId}`, {
+      const res = await fetch(`${API_BASE}/profiles?id=eq.${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -82,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Exchange Firebase ID token for backend custom JWT
     const firebaseToken = await result.user.getIdToken();
     try {
-      const authRes = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/google`, {
+      const authRes = await fetch(`${API_BASE}/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken: firebaseToken }),
@@ -106,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) throw new Error('No user logged in');
 
     const token = localStorage.getItem('userSessionToken') || await user.getIdToken();
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/profiles/${user.uid}`, {
+    const res = await fetch(`${API_BASE}/profiles/${user.uid}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
