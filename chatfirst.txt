@@ -2309,19 +2309,6 @@ Replace the placeholder content in backend/firebase_service_account.json with th
 Do you have a Firebase project set up and can provide the service account key, or would you like me to help you set up Firebase authentication?
 
 
-{
-"type": "service_account",
-"project_id": "ipap-66d4f",
-"private_key_id": "12b3523c23597bc1f3b1c22a201873cceb58dd6e",
-"private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC9X5rtFbSrDgM1\nwDC1s7jN01PC3LM78RfXlK19DdtsihUcaXOi+EAWryN6rkMdCYA2ScOVdvg8okys\nB3gT43KEuS8975/kYm4q+9/ExKazPaiQ1M/tS3X1I1IKRB+zwoF3Sj3y8OSbbDvb\n6O9dzggl0vzDx7uZDakxWhRtLA6+hqOnqYViWgty8Tena9BcG1AU4Do+HW8DmMQO\nYRXIKtjrlq+0jNUU7YGVAs/iLyZNDSPCJMir0y3he0c4L4A/r4ZlAt0gIMdjOCPE\njPYHzO4eLBO8vnQ0tcYllxTh4x/qt6IwrdpIdRYTd94MT176wBZP9k/bYYWxCgA4\ntIq0wLeTAgMBAAECggEAEA8qfo6HqrXefya+5WR0oz0XmP/Jp1H+Y/F0y5UVlYfE\nMIufcHjoSRmDGGVCGxVHgn27kKeXzN81QfrEK75EY42nZvOKNf5EOhrv/VTGj46x\nW87gRHmmFYAa9fSUUlSH/CDB+MyFkR9FmD7nBafHjcWYWoChSmJxMFaOQuUolEQw\nkjZt7rDsQ3ysSC0DxwatMD/HIT/iTI9ULt+3HR55BUyhdfZrYGCVhuQw6x1wUsob\nbaArc1+VimfHck+iTgYd5GeoQckXiiNsKzuwml2Bo+ffbysL0CgkyFTZcTGbPDXt\nl+T1/Fj1ci2+a4GMpkt6Uu4OzQUANHr6rsOGMtR7gQKBgQDuqN5D/DzlmTXtQThv\n7s00Wcihga4fBrxIXM0AvYg7Gke2LCbwO/IzqOso0Qis2DUonre30WpvVJ0qhfb8\n/7rYoPVxFloho5Oklw8BLS5pfJdqISF9QyLP0wZ+IbYgkOaUc3yEW5ZmDK0JJbXv\nr0k6yXK5yXBRlXuRaY0zvTIV0wKBgQDLIgBER6hphzS05xXScfOtgbcX9ZzzUfyN\n9K5K1baOGv5sJ7AJ98yd5UHmkrUn5mIcxrxxf3rteRuBPxdtQ1hQ2V6Rqox4jPm+\ni3s7IKERDoaNPzCMusL+KXaazVzeCm2VQ1jkvEq2swLgopzONL/mRRpgY2uodGcG\ny+t10AT/QQKBgEq/XQ3R/Ii0ma07Vh/InUCeNjZPVWemRmYrmpF2yyonqvoljfSD\n8fG4IB7iiWMJPG0CeOv7jOhdifP9jUPkHHMoxnaq14PdpapRHYPy0Kx9NzcoNUL0\nOfz5TPlIObCtcWphWUhjHxHLOo643ui476iX23TQ4HrM5KzAcFcaFIu9AoGBAJ1G\niBpVuQlry909BmJYJCl0w4RjgM/L7NUkW0ZJzfyc3dxzphMxr1WZSbryYByyfch1\n/zWJVG5FVIxvgv3wJJMEmfoCqJw12rAzYohXLR39tyPphvePKqaLB++3jW3FeS8W\nY99GAjsOwu2WOf5WTTZGzrNOhu54ocRbYsVm+FeBAoGBAIIVBWE0mvGcVJjgunPb\n3dtRJC9px6S9JTBhPT9skyGBZTA/HZ8zA2EhO8J/XXIa3UrYG7n4WbfP02GyzqBi\nvL4txVQrxkbmLRYwIlEUWpuP7qRRG02A4qwWwxfGOtRHZFcFYwPkG/NMhBdIxuot\nvUFbmTLgtExE65HrdWuysied\n-----END PRIVATE KEY-----\n",
-"client_email": "firebase-adminsdk-fbsvc@ipap-66d4f.iam.gserviceaccount.com",
-"client_id": "113391863032640418069",
-"auth_uri": "https://accounts.google.com/o/oauth2/auth",
-"token_uri": "https://oauth2.googleapis.com/token",
-"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-"client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40ipap-66d4f.iam.gserviceaccount.com",
-"universe_domain": "googleapis.com"
-}
 
 blackbox wants to edit this file:
 
